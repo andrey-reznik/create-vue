@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "openapi:make:config": "node .scripts/openapitools.generator.mjs",
+    "openapi:make:schema2ts": "json2ts -i ./node_modules/@openapitools/openapi-generator-cli/config.schema.json -o ./.openapitools/openapitools.d.ts --unreachableDefinitions",
+    "openapi:make:client": "openapi-generator-cli generate",
+    "openapi:postmake": "node .scripts/openapitools.postmake.mjs",
+    "openapi:make": "dotenvx run -f .env.project -- run-s openapi:make:config openapi:make:client openapi:postmake"
+  },
+  "devDependencies": {
+    "@dotenvx/dotenvx": "^0.44.1",
+    "@openapitools/openapi-generator-cli": "^2.13.4",
+    "json-schema-to-typescript": "^14.0.5",
+    "npm-run-all2": "^6.2.0"
+  }
+}

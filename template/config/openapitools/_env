@@ -1,0 +1,4 @@
+# OpenAPI Generator variables
+GENERATOR_NAME=typescript-axios
+OUTPUT=./src/shared/api
+INPUT_SPEC=http://192.168.1.140:8080/openapi.json

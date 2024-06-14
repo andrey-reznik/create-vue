@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "favicons:make": "dotenvx run -f .env.project -- node .scripts/favicon.generator.mjs"
+  },
+  "devDependencies": {
+    "favicons": "^7.2.0"
+  }
+}

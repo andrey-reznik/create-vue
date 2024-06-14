@@ -1,0 +1,4 @@
+# Web app manifest
+APP_NAME=Template for Frontend on Vue.js 3
+APP_SHORT_NAME=Frontend
+APP_DESCRIPTION=Basic template for quick start of project development on Vue 3

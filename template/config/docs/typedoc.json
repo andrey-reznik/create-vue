@@ -1,0 +1,24 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["./src/**/*.ts", "./src/**/*.vue"],
+  "exclude": [
+    "**/node_modules/**",
+    "**/stories/**",
+    "**/plugins/**",
+    "**/presets/**"
+  ],
+  "tsconfig": "./tsconfig.app.json",
+  "out": "./docs/typedoc-api",
+  "docsRoot": "./docs",
+  "plugin": [
+    "typedoc-plugin-vue",
+    "typedoc-plugin-markdown",
+    "typedoc-vitepress-theme"
+  ],
+  "sidebar": {
+    "autoConfiguration": true,
+    "format": "vitepress",
+    "pretty": false,
+    "collapsed": true
+  }
+}

@@ -1,0 +1,166 @@
+import getCommand from './getCommand'
+
+const sfcTypeSupportDoc = [
+  '',
+  '## Type Support for `.vue` Imports in TS',
+  '',
+  'TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.',
+  ''
+].join('\n')
+
+const typescriptBadge = '![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)'
+const vueBadge = '[![Vue.js 3](https://img.shields.io/badge/-Vue.js-4fc08d?style=flat&logo=vuedotjs&logoColor=white)](https://vuejs.org/)'
+const piniaBadge = '[![Pinia](https://img.shields.io/static/v1?label=&message=Pinia&color=yellow&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iODYiIGhlaWdodD0iMTA1IiB2aWV3Qm94PSIwIDAgODYgMTA1IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTM3LjUyNTYgNTMuNTYzQzQ0LjI5MTMgNDcuMTE2OSA0Mi4yMjY4IDM5LjE0NDMgMzYuMDk5MiAyOS40ODM1QzI5Ljk3MTYgMTkuODIyNiAxNy42MzY4IDE2LjM4NTYgMTUuMzM1NiAxOC41NzgxQzEzLjAzNDUgMjAuNzcwNSAxMi41MjQ0IDM2LjQ0NTYgMTguNjUyIDQ2LjEwNjVDMjQuNzc5NiA1NS43NjczIDMwLjc1OTggNjAuMDA5MiAzNy41MjU2IDUzLjU2M1oiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcl8xODJfMTgwMSkiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik00My4zNzU1IDU0LjQ1NTNDNDguMzgwOSA2Mi4zNDY3IDU1LjA3MjUgNTkuNDYxMyA2My4zNTUyIDUxLjU2OThDNzEuNjM3OSA0My42NzgzIDc1LjA3MjQgMjguNTYxNyA3My4zNyAyNS44Nzc3QzcxLjY2NzYgMjMuMTkzNyA1OC43MzA1IDIzLjMyODMgNTAuNDQ3OCAzMS4yMTk3QzQyLjE2NSAzOS4xMTEyIDM4LjM3MDIgNDYuNTYzOCA0My4zNzU1IDU0LjQ1NTNaIiBmaWxsPSJ1cmwoI3BhaW50MV9saW5lYXJfMTgyXzE4MDEpIi8%2BCjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNNDAuNjM4OSA1MC4xMTM4QzQ4Ljk1IDUxLjEzNDMgNTIuMjE4NSA0My40NTYxIDUzLjc0MjQgMzEuMDQ0OEM1NS4yNjYzIDE4LjYzMzQgNDguOTg0MyA1LjUxNTQyIDQ2LjE1NzUgNS4xNjgzNEM0My4zMzA4IDQuODIxMjYgMzMuODM0IDE2LjAwMTggMzIuMzEwMSAyOC40MTMyQzMwLjc4NjEgNDAuODI0NiAzMi4zMjc4IDQ5LjA5MzQgNDAuNjM4OSA1MC4xMTM4WiIgZmlsbD0idXJsKCNwYWludDJfbGluZWFyXzE4Ml8xODAxKSIvPgo8cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTM4LjU0NTggMTA1QzU1Ljk3MTEgMTA1IDcwLjEwMjcgOTkuOTM4MSA3MC4xMDI3IDc2Ljk4MjJDNzAuMTAyNyA1NC4wMjYyIDU1Ljk3MTEgMzUuMTg4NyAzOC41NDU4IDM1LjE4ODdDMjEuMTIwNSAzNS4xODg3IDcgNTQuMDI2MiA3IDc2Ljk4MjJDNyA5OS45MzgxIDIxLjEyMDUgMTA1IDM4LjU0NTggMTA1WiIgZmlsbD0idXJsKCNwYWludDNfbGluZWFyXzE4Ml8xODAxKSIvPgo8cGF0aCBkPSJNNTQuNDg0MyA3Mi4yOTU2QzU2Ljk3MzYgNzIuMjk1NiA1OC45OTE2IDcxLjM1NyA1OC45OTE2IDcwLjE5OTJDNTguOTkxNiA2OS4wNDEzIDU2Ljk3MzYgNjguMTAyNyA1NC40ODQzIDY4LjEwMjdDNTEuOTk0OSA2OC4xMDI3IDQ5Ljk3NjkgNjkuMDQxMyA0OS45NzY5IDcwLjE5OTJDNDkuOTc2OSA3MS4zNTcgNTEuOTk0OSA3Mi4yOTU2IDU0LjQ4NDMgNzIuMjk1NloiIGZpbGw9IiNFQUFEQ0MiLz4KPHBhdGggZD0iTTIxLjEwNTEgNzEuMDIyMUMyMy41NzU5IDcxLjMyNTUgMjUuNjkzMiA3MC42Mzk4IDI1LjgzNDMgNjkuNDkwNkMyNS45NzU0IDY4LjM0MTQgMjQuMDg2OSA2Ny4xNjM5IDIxLjYxNjEgNjYuODYwNUMxOS4xNDUzIDY2LjU1NzEgMTcuMDI3OSA2Ny4yNDI4IDE2Ljg4NjggNjguMzkyQzE2Ljc0NTcgNjkuNTQxMiAxOC42MzQzIDcwLjcxODcgMjEuMTA1MSA3MS4wMjIxWiIgZmlsbD0iI0VBQURDQyIvPgo8cGF0aCBkPSJNNDEuNDMzNCA2OS40NTY4QzQwLjA3NjggNzAuNTU5MiAzOC41MSA3MS4wMDkgMzYuNzMyOCA3MC44MDU5QzM0Ljk1NTYgNzAuNjAyOCAzMy42MzgzIDY5Ljg2NTIgMzIuNzgxIDY4LjU5MyIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0yMy45Nzc0IDU4LjU0NjdDMjUuMjIxNSA1OC41MDMzIDI2LjM2NTMgNTguOTY4MSAyNy4yMDg5IDU5Ljc1NDhDMjguMDUyNiA2MC41NDE0IDI4LjU5NjEgNjEuNjUgMjguNjM5NiA2Mi44OTM5QzI4LjY4MyA2NC4xMzc5IDI4LjIxODEgNjUuMjgxNyAyNy40MzE0IDY2LjEyNTNDMjYuNjQ0NyA2Ni45NjkgMjUuNTM2MSA2Ny41MTI1IDI0LjI5MiA2Ny41NTU5QzIzLjA0ODEgNjcuNTk5MyAyMS45MDQ0IDY3LjEzNDUgMjEuMDYwOCA2Ni4zNDc4QzIwLjIxNzMgNjUuNTYxMSAxOS42NzM4IDY0LjQ1MjUgMTkuNjMwNCA2My4yMDg1QzE5LjU4NjkgNjEuOTY0NiAyMC4wNTE4IDYwLjgyMDggMjAuODM4NCA1OS45NzczQzIxLjYyNTEgNTkuMTMzNiAyMi43MzM1IDU4LjU5MDIgMjMuOTc3NCA1OC41NDY3WiIgZmlsbD0iYmxhY2siLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0yNC4yMTQxIDYyLjMxNDNDMjQuMTg1OCA2MS41MDQ0IDIzLjUwNiA2MC44NzA3IDIyLjY5NjQgNjAuODk4OUMyMS44ODYzIDYwLjkyNzIgMjEuMjUyNiA2MS42MDY5IDIxLjI4MDkgNjIuNDE2OEMyMS4zMDkyIDYzLjIyNjcgMjEuOTg4OCA2My44NjA1IDIyLjc5ODggNjMuODMyMkMyMy42MDg0IDYzLjgwMzYgMjQuMjQyNCA2My4xMjQyIDI0LjIxNDEgNjIuMzE0M1oiIGZpbGw9IndoaXRlIi8%2BCjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNNTEuMjg3OSA1OS42OTA3QzUyLjUzMTkgNTkuNjQ3MyA1My42NzU2IDYwLjExMjEgNTQuNTE5MiA2MC44OTg4QzU1LjM2MjkgNjEuNjg1NCA1NS45MDYzIDYyLjc5NCA1NS45NDk4IDY0LjAzNzlDNTUuOTkzMiA2NS4yODIgNTUuNTI4NCA2Ni40MjU3IDU0Ljc0MTcgNjcuMjY5NEM1My45NTUxIDY4LjExMyA1Mi44NDY1IDY4LjY1NjUgNTEuNjAyNSA2OC42OTk5QzUwLjM1ODYgNjguNzQzNCA0OS4yMTQ4IDY4LjI3ODUgNDguMzcxMSA2Ny40OTE4QzQ3LjUyNzUgNjYuNzA1MSA0Ni45ODQgNjUuNTk2NSA0Ni45NDA2IDY0LjM1MjVDNDYuODk3MiA2My4xMDg2IDQ3LjM2MiA2MS45NjQ5IDQ4LjE0ODcgNjEuMTIxM0M0OC45MzU0IDYwLjI3NzcgNTAuMDQ0IDU5LjczNDIgNTEuMjg3OSA1OS42OTA3WiIgZmlsbD0iYmxhY2siLz4KPHBhdGggZD0iTTI4LjAxMSA2Mi45MTU4QzI4LjA4NTggNjUuMDU2OCAyNi40MTEgNjYuODUyNiAyNC4yNzAxIDY2LjkyNzRDMjIuMTI5NSA2Ny4wMDIxIDIwLjMzMzcgNjUuMzI3NSAyMC4yNTg5IDYzLjE4NjVDMjAuMTg0MiA2MS4wNDU4IDIxLjg1ODcgNTkuMjUgMjMuOTk5NCA1OS4xNzUzQzI2LjE0MDMgNTkuMTAwNSAyNy45MzYzIDYwLjc3NTEgMjguMDExIDYyLjkxNThaTTI5LjI2ODEgNjIuODcxOUMyOS4xNjkxIDYwLjAzNjkgMjYuNzkwNiA1Ny44MTkyIDIzLjk1NTUgNTcuOTE4MkMyMS4xMjA2IDU4LjAxNzIgMTguOTAyOCA2MC4zOTU1IDE5LjAwMTggNjMuMjMwNEMxOS4xMDA4IDY2LjA2NTYgMjEuNDc5IDY4LjI4MzUgMjQuMzE0IDY4LjE4NDVDMjcuMTQ5MiA2OC4wODU0IDI5LjM2NzEgNjUuNzA3MSAyOS4yNjgxIDYyLjg3MTlaIiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIzIi8%2BCjxwYXRoIGQ9Ik01NS4zMjEzIDY0LjA1OTlDNTUuMzk2IDY2LjIwMDggNTMuNzIxNSA2Ny45OTY2IDUxLjU4MDYgNjguMDcxNEM0OS40Mzk5IDY4LjE0NjEgNDcuNjQzOSA2Ni40NzE1IDQ3LjU2OTIgNjQuMzMwNkM0Ny40OTQ0IDYyLjE4OTkgNDkuMTY5MiA2MC4zOTQgNTEuMzA5OSA2MC4zMTkzQzUzLjQ1MDcgNjAuMjQ0NSA1NS4yNDY1IDYxLjkxOTEgNTUuMzIxMyA2NC4wNTk5Wk01Ni41Nzg0IDY0LjAxNkM1Ni40Nzk0IDYxLjE4MDkgNTQuMTAxMSA1OC45NjMyIDUxLjI2NiA1OS4wNjIyQzQ4LjQzMSA1OS4xNjEyIDQ2LjIxMzEgNjEuNTM5NSA0Ni4zMTIxIDY0LjM3NDVDNDYuNDExMSA2Ny4yMDk2IDQ4Ljc4OTUgNjkuNDI3NSA1MS42MjQ1IDY5LjMyODVDNTQuNDU5NiA2OS4yMjk1IDU2LjY3NzQgNjYuODUxMiA1Ni41Nzg0IDY0LjAxNloiIGZpbGw9IndoaXRlIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjMiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik01MS41MjQ0IDYzLjQ1ODRDNTEuNDk2MSA2Mi42NDg1IDUwLjgxNjQgNjIuMDE0NyA1MC4wMDY1IDYyLjA0M0M0OS4xOTY2IDYyLjA3MTIgNDguNTYyOSA2Mi43NTA5IDQ4LjU5MTEgNjMuNTYwOEM0OC42MTk0IDY0LjM3MDcgNDkuMjk5MSA2NS4wMDQ1IDUwLjEwOSA2NC45NzYyQzUwLjkxODkgNjQuOTQ3OSA1MS41NTI2IDY0LjI2ODMgNTEuNTI0NCA2My40NTg0WiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTE0LjY1MiA3OS4xMDlMMzAuMTY1NiA5NS4yNTE2IiBzdHJva2U9IiNFQ0I3MzIiIHN0cm9rZS13aWR0aD0iMTEiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNMjguMDY5MiA4MC45OTU4TDE4LjIxNTkgOTEuNDc4IiBzdHJva2U9IiNFQ0I3MzIiIHN0cm9rZS13aWR0aD0iMTEiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNNjIuMjQxMSA3OS4xMDlMNDYuNzI3NSA5NS4yNTE2IiBzdHJva2U9IiNFQ0I3MzIiIHN0cm9rZS13aWR0aD0iMTEiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNNDguODIzOSA4MC45OTU4TDU4LjY3NzEgOTEuNDc4IiBzdHJva2U9IiNFQ0I3MzIiIHN0cm9rZS13aWR0aD0iMTEiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNNDQuODQwNyA0My40Njk2TDM0LjU2ODIgNTMuNzQyMSIgc3Ryb2tlPSIjRkZDNzNCIiBzdHJva2Utd2lkdGg9IjExIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPHBhdGggZD0iTTQyLjc0NDMgNTMuNzQyMUwzMi40NzE3IDQzLjQ2OTYiIHN0cm9rZT0iI0ZGQzczQiIgc3Ryb2tlLXdpZHRoPSIxMSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8%2BCjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXJfMTgyXzE4MDEiIHgxPSIzMzkzLjc4IiB5MT0iLTI2MjAuOTYiIHgyPSI2MTk1LjY0IiB5Mj0iNTIxOC4yOSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjNTJDRTYzIi8%2BCjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzUxQTI1NiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MV9saW5lYXJfMTgyXzE4MDEiIHgxPSIyNzE3LjY3IiB5MT0iMzQxMC40MSIgeDI9Ii01MTIyLjI5IiB5Mj0iNjIxMC45IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI%2BCjxzdG9wIHN0b3AtY29sb3I9IiM1MkNFNjMiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNTFBMjU2Ii8%2BCjwvbGluZWFyR3JhZGllbnQ%2BCjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQyX2xpbmVhcl8xODJfMTgwMSIgeDE9IjM0NTMuNzkiIHkxPSI0MjMuNTcyIiB4Mj0iMTkwNS42NSIgeTI9IjEzMDMyLjEiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzhBRTk5QyIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM1MkNFNjMiLz4KPC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDNfbGluZWFyXzE4Ml8xODAxIiB4MT0iMTAzNDkuMiIgeTE9IjU4NTMuNTUiIHgyPSI4Njc2LjczIiB5Mj0iMzMzMTYuNiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjRkZFNTZDIi8%2BCjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0ZGQzYzQSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM%2BCjwvc3ZnPgo%3D)](https://pinia.vuejs.org/)'
+const primevueBadge = '[![PrimeVue](https://img.shields.io/static/v1?label=&message=PrimeVue&color=green&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMzUiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCAzNSA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI1LjU3MzkgMTguMDQ1OEwyMi44NjYxIDE3LjQ0NDNMMjQuOTcyMiAyMC40NTE5VjI5Ljc3NTZMMzIuMTkzIDIzLjc2MDNWMTMuNTM0NEwyOC44ODM1IDE0LjczNzRMMjUuNTczOSAxOC4wNDU4WiIgZmlsbD0iIzEzOTQ2MCIvPgo8cGF0aCBkPSJNOC43MjUyMSAxOC4wNDU4TDExLjQzMyAxNy40NDQzTDkuMzI2OTUgMjAuNDUxOVYyOS43NzU2TDIuMTA2MDggMjMuNzYwM1YxMy41MzQ0TDUuNDE1NjQgMTQuNzM3NEw4LjcyNTIxIDE4LjA0NThaIiBmaWxsPSIjMTM5NDYwIi8%2BCjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTAuMjI5NiAyMS4wNTM0TDEyLjYzNjUgMTcuNDQ0M0wxNC4xNDA5IDE4LjM0NjZIMjAuMTU4MkwyMS42NjI2IDE3LjQ0NDNMMjQuMDY5NiAyMS4wNTM0VjM0LjU4NzhMMjIuMjY0MyAzNy4yOTQ3TDIwLjE1ODIgMzkuNEgxNC4xNDA5TDEyLjAzNDggMzcuMjk0N0wxMC4yMjk2IDM0LjU4NzhWMjEuMDUzNFoiIGZpbGw9IiMxMzk0NjAiLz4KPHBhdGggZD0iTTI0Ljk3MjIgMzUuNDkwMUwyOC44ODM1IDMxLjU4MDJWMjcuNjcwMkwyNC45NzIyIDMwLjk3ODZWMzUuNDkwMVoiIGZpbGw9IiMxMzk0NjAiLz4KPHBhdGggZD0iTTkuMzI2OTYgMzUuNDkwMUw1LjQxNTY1IDMxLjU4MDJWMjcuNjcwMkw5LjMyNjk2IDMwLjk3ODZWMzUuNDkwMVoiIGZpbGw9IiMxMzk0NjAiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0yMS4wNjA5IDBIMjAuMTU4M1Y1Ljc5ODhMMjEuODE0MSAxLjc4ODQyTDIxLjA2MDkgMFpNMTkuNTc2MiA3LjIwODQ5TDE4Ljk1NDggNy41MTkwOFYwSDE3Ljc1MTNWMTEuNjI4MUwxOS41NzYyIDcuMjA4NDlaTTE3Ljc1MTMgMTQuMjQ4M0wyMi4zNjA1IDMuMDg1NDlMMjMuNDY3OCA1LjcxNDVMMTkuODU3NCAxNy4xNDM1SDE3Ljc1MTNWMTQuMjQ4M1pNMTYuNTQ3OCAxMS42NzE4VjBIMTUuMzQ0M1Y3LjUxOTA4TDE0Ljg0MzQgNy4yNjg2OUwxNi41NDc4IDExLjY3MThaTTE0LjE0MDkgNS40NTM4NVYwSDEzLjIzODNMMTIuNjA4NSAxLjQ5NTE5TDE0LjE0MDkgNS40NTM4NVpNMTIuMDQ5NyAyLjgyMTgxTDE2LjU0NzggMTQuNDQxOVYxNy4xNDM1SDE0Ljc0MjZMMTAuODMxMyA1LjcxNDVMMTIuMDQ5NyAyLjgyMTgxWiIgZmlsbD0iYmxhY2siLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0xLjgwNTIyIDEyLjMzMTNMMTQuNzQyNiAxNy4xNDM1SDE1LjA0MzVMMTEuMTMyMiA1LjcxNDUyTDAgNC44MTIyM0wxLjgwNTIyIDEyLjMzMTNaTTMyLjc5NDggMTIuMzMxM0wxOS44NTc0IDE3LjE0MzVIMTkuNTU2NUwyMy4xNjcgNS43MTQ1MkwzNC42IDQuODEyMjNMMzIuNzk0OCAxMi4zMzEzWiIgZmlsbD0iIzEzOTQ2MCIvPgo8cGF0aCBkPSJNMjQuMDY5NiA0LjgxMjIxTDMwLjM4NzggNC4yMTA2OUwyNi4xNzU3IDBIMjEuOTYzNUwyNC4wNjk2IDQuODEyMjFaIiBmaWxsPSJibGFjayIvPgo8cGF0aCBkPSJNMTAuMjI5NSA0LjgxMjIxTDMuOTExMjkgNC4yMTA2OUw4LjEyMzQ2IDBIMTIuMzM1NkwxMC4yMjk1IDQuODEyMjFaIiBmaWxsPSJibGFjayIvPgo8cGF0aCBkPSJNNC43MDAwMSA1LjIwMDAxTDExLjIgNS43MDAwMUwxNS4xIDE3LjE1SDE0LjdMMTAuNSAxNS42TDQuNzAwMDEgNS4yMDAwMVoiIGZpbGw9ImJsYWNrIi8%2BCjxwYXRoIGQ9Ik0yOS44IDUuMjAwMDFMMjMuMSA1LjcwMDAxTDE5LjQgMTcuMTVMMTkuOSAxNy4xNEwyMy44IDE1LjdMMjkuOCA1LjIwMDAxWiIgZmlsbD0iYmxhY2siLz4KPHBhdGggZD0iTTEyLjEgMTguMkwxMi42IDE3LjRMMTQuMyAxOC4ySDIwLjNMMjEuNiAxNy40TDIyLjIgMTguMkwxNy4xNSAyNi44TDEyLjEgMTguMloiIGZpbGw9ImJsYWNrIi8%2BCjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTIuMDI5NyAwTDE3LjEyMTQgMTMuMTUzNkwyMi41NTI2IDBIMTIuMDI5N1oiIGZpbGw9IiMxMzk0NjAiLz4KPC9zdmc%2BCg%3D%3D)](https://tailwind.primevue.org/)'
+const tailwindBadge = '[![Tailwind](https://img.shields.io/badge/tailwindcss-0F172A?&logo=tailwindcss)](https://tailwindcss.com/)'
+
+export default function generateReadme(
+  {
+    projectName,
+    packageManager,
+    needsTypeScript,
+    needsCypress,
+    needsStorybook,
+    needsOpenapitools,
+    needsTypedoc,
+    needsFavicons,
+    needsNightwatch,
+    needsCypressCT,
+    needsNightwatchCT,
+    needsPlaywright,
+    needsVitest,
+    needsEslint
+  }) {
+  const commandFor = (scriptName: string, args?: string) =>
+    getCommand(packageManager, scriptName, args)
+
+  let readme = `# ${projectName}`
+
+
+  // Этот сервис предназначен для HoReCa. Сервис позволяет формировать персонализированные коммерческие предложения и прогнозировать потенциальную прибыль.
+
+  let npmScriptsDescriptions = `\`\`\`sh
+${commandFor('install')}
+\`\`\`
+
+### Compile and Hot-Reload for Development
+
+\`\`\`sh
+${commandFor('dev')}
+\`\`\`
+
+### ${needsTypeScript ? 'Type-Check, ' : ''}Compile and Minify for Production
+
+\`\`\`sh
+${commandFor('build')}
+\`\`\`
+`
+
+  if (needsVitest) {
+    npmScriptsDescriptions += `
+### Run Unit Tests with [Vitest](https://vitest.dev/)
+
+\`\`\`sh
+${commandFor('test:unit')}
+\`\`\`
+`
+  }
+
+  if (needsCypressCT) {
+    npmScriptsDescriptions += `
+### Run Headed Component Tests with [Cypress Component Testing](https://on.cypress.io/component)
+
+\`\`\`sh
+${commandFor('test:unit:dev')} # or \`${commandFor('test:unit')}\` for headless testing
+\`\`\`
+`
+  }
+
+  if (needsCypress) {
+    npmScriptsDescriptions += `
+### Run End-to-End Tests with [Cypress](https://www.cypress.io/)
+
+\`\`\`sh
+${commandFor('test:e2e:dev')}
+\`\`\`
+
+This runs the end-to-end tests against the Vite development server.
+It is much faster than the production build.
+
+But it's still recommended to test the production build with \`test:e2e\` before deploying (e.g. in CI environments):
+
+\`\`\`sh
+${commandFor('build')}
+${commandFor('test:e2e')}
+\`\`\`
+`
+  }
+
+  if (needsNightwatch) {
+    npmScriptsDescriptions += `
+### Run End-to-End Tests with [Nightwatch](https://nightwatchjs.org/)
+
+\`\`\`sh
+# When using CI, the project must be built first.
+${commandFor('build')}
+
+# Runs the end-to-end tests
+${commandFor('test:e2e')}
+# Runs the tests only on Chrome
+${commandFor('test:e2e', '--env chrome')}
+# Runs the tests of a specific file
+${commandFor('test:e2e', `tests/e2e/example.${needsTypeScript ? 'ts' : 'js'}`)}
+# Runs the tests in debug mode
+${commandFor('test:e2e', '--debug')}
+\`\`\`
+    `
+  }
+
+  if (needsNightwatchCT) {
+    npmScriptsDescriptions += `
+### Run Headed Component Tests with [Nightwatch Component Testing](https://nightwatchjs.org/guide/component-testing/introduction.html)
+  
+\`\`\`sh
+${commandFor('test:unit')}
+${commandFor('test:unit -- --headless # for headless testing')}
+\`\`\`
+`
+  }
+
+  if (needsPlaywright) {
+    npmScriptsDescriptions += `
+### Run End-to-End Tests with [Playwright](https://playwright.dev)
+
+\`\`\`sh
+# Install browsers for the first run
+npx playwright install
+
+# When testing on CI, must build the project first
+${commandFor('build')}
+
+# Runs the end-to-end tests
+${commandFor('test:e2e')}
+# Runs the tests only on Chromium
+${commandFor('test:e2e', '--project=chromium')}
+# Runs the tests of a specific file
+${commandFor('test:e2e', 'tests/example.spec.ts')}
+# Runs the tests in debug mode
+${commandFor('test:e2e', '--debug')}
+\`\`\`
+`
+  }
+
+  if (needsEslint) {
+    npmScriptsDescriptions += `
+### Lint with [ESLint](https://eslint.org/)
+
+\`\`\`sh
+${commandFor('lint')}
+\`\`\`
+`
+  }
+
+  readme += npmScriptsDescriptions
+
+  return readme
+}

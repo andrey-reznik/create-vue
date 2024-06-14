@@ -1,0 +1,3 @@
+#Defines the primary color used in Tailwind CSS for the project.
+#Possible values: orange | blue | red | green | pink
+PRIMARY_COLOR=blue

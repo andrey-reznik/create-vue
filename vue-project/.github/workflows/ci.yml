@@ -1,0 +1,50 @@
+name: Build and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Specify the tag for the release'
+        required: false
+  push:
+    tags: ["*"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build package
+      run: npm run build-only
+
+    - name: Choose tag for release
+      id: tag
+      run: |
+        if [ -n "${{ github.event.inputs.tag }}" ]; then
+          echo "::set-output name=tag::${{ github.event.inputs.tag }}"
+        elif [ "${{ github.event_name }}" == 'push' ]; then
+          echo "::set-output name=tag::$(echo ${{ github.ref }} | awk -F'/' '{print $NF}')"
+        fi
+
+    - name: Archive dist
+      run: zip -r "release-${{ steps.tag.outputs.tag }}.zip" dist
+
+    - name: Create release
+      id: create_release
+      uses: ncipollo/release-action@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifacts: "release-${{ steps.tag.outputs.tag }}.zip"
+        tag: ${{ steps.tag.outputs.tag }}

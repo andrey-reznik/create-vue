@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "vue": "^3.4.27",
+    "vue-router": "^4.3.3"
+  },
+  "devDependencies": {
+    "unplugin-vue-router": "^0.9.1"
+  }
+}
